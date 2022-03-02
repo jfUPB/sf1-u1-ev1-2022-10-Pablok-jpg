@@ -98,7 +98,59 @@ void loop() {
       lastDOWNbuttonState = DOWNbuttonState;
 
       digitalWrite(LED_COUNT, HIGH);
+      
+      else if (ARMbuttonState != lastARMbuttonState) {
+          if (ARMbuttonState == HIGH) {
+            bPress = true;
+            bombState = BombStates::Activa;
+          }
+        }
+        lastARMbuttonState = ARMbuttonState;
 
+        digitalWrite(LED_COUNT, HIGH);
+
+        break;
+      }
+
+    case BombStates::Activa: {
+        const uint32_t TiempoLED_COUNT = 500;
+        static uint32_t previousTMinus = 0;
+        static uint8_t LED_countState = LOW;
+        uint32_t currentTMinus = millis();
+
+        if (currentTMinus - previousTMinus >= TiempoLED_COUNT) {
+          previousTMinus = currentTMinus;
+          if (LED_countState == LOW) {
+            LED_countState = HIGH;
+          }
+          else {
+            LED_countState = LOW;
+            counter--;
+            display.clear();
+            display.setTextAlignment(TEXT_ALIGN_LEFT);
+            display.setFont(ArialMT_Plain_16);
+            display.drawString(x, y, String(counter));
+            display.display();
+          }
+          digitalWrite(LED_COUNT, LED_countState);
+        }
+        if (counter == 0) {
+          bombState = BombStates::BOOM;
+        }
+        break;
+      }
+
+    case BombStates::BOOM: {
+        digitalWrite(LED_COUNT, LOW);
+        digitalWrite(BOMB_OUT, HIGH);
+        display.clear();
+        display.setTextAlignment(TEXT_ALIGN_LEFT);
+        display.setFont(ArialMT_Plain_16);
+        display.drawString(x, y, String("BOOM!!"));
+        display.display();
+        delay (3000);
+        bombState = BombStates::Init;
+      }
 
   }
 
